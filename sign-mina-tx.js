@@ -2,17 +2,35 @@ import { Mina } from "o1js";
 import Client from "mina-signer";
 import { config } from 'dotenv'
 import assert from 'assert'
+import { GetSecretValueCommand, SecretsManagerClient } from "@aws-sdk/client-secrets-manager";
 config()
 // env
 
-const initClient = () => {
-    const networkType = process.env['MINA_NETWORK_TYPE'] ?? 'testnet'
-    // KMS
-    const signerPrivateKeyString = 'EKEkFcCTX5upE1cyM3KuUveXWx8Mpk5ubDCDp3VqK83CtZaegdRX'
+const getSignerPrivateKey = async () => {
+    const region = process.env['AWS_REGION']
+    const SecretId = process.env['SIGNER_MINA_KEY_ID']
+    assert(typeof region === 'string' && region.length > 0, 'invalid aws region')
+    assert(typeof SecretId === 'string' && SecretId.length > 0, 'invalid SecretId')
 
-    // env assertion
+    const client = new SecretsManagerClient({
+        region,
+    });
+
+    const command = new GetSecretValueCommand({
+        SecretId,
+    });
+    const data = await client.send(command);
+
+    if (data !== undefined && data.SecretString !== undefined) {
+        return JSON.parse(data.SecretString)['SIGNER_MINA_PRIVATE_KEY']
+    } throw new Error("cannot decrypt signer key")
+}
+const initClient = async () => {
+    const networkType = process.env['MINA_NETWORK_TYPE']
     assert(networkType === 'mainnet' || networkType === 'testnet', 'invalid network type')
-    //
+    
+    const signerPrivateKeyString = await getSignerPrivateKey()
+
     const client = new Client({
         network: networkType
     })
@@ -53,6 +71,7 @@ export async function sign_mina(params) {
         const res = client.signTransaction(minaSignerPayload, signerPrivateKeyString)
         response.signedTx = res.data.zkappCommand;
     } catch (error) {
+        console.log(error)
         response.message = error.message;
         response.success = false;
         response.signedTx = null;
