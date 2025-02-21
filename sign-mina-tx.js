@@ -4,16 +4,20 @@ import { config } from 'dotenv'
 import assert from 'assert'
 config()
 // env
-const networkType = process.env['MINA_NETWORK_TYPE'] ?? 'testnet'
-// KMS
-const signerPrivateKeyString = 'EKEkFcCTX5upE1cyM3KuUveXWx8Mpk5ubDCDp3VqK83CtZaegdRX'
 
-// env assertion
-assert(networkType === 'mainnet' || networkType === 'testnet', 'invalid network type')
-//
-const client = new Client({
-    network: networkType
-})
+const initClient = () => {
+    const networkType = process.env['MINA_NETWORK_TYPE'] ?? 'testnet'
+    // KMS
+    const signerPrivateKeyString = 'EKEkFcCTX5upE1cyM3KuUveXWx8Mpk5ubDCDp3VqK83CtZaegdRX'
+
+    // env assertion
+    assert(networkType === 'mainnet' || networkType === 'testnet', 'invalid network type')
+    //
+    const client = new Client({
+        network: networkType
+    })
+    return { client, signerPrivateKeyString };
+}
 /*
  * 
  * @param {{jsonTx:string}} params 
@@ -26,6 +30,9 @@ export async function sign_mina(params) {
         message: "ok"
     }
     try {
+
+        const { client, signerPrivateKeyString } = await initClient()
+
         const parsedJson = JSON.parse(params.jsonTx)
         const tx = Mina.Transaction.fromJSON(parsedJson)
 
