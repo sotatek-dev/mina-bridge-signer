@@ -24,33 +24,32 @@ export async function sign_mina(params) {
         success: true,
         signedTx: undefined,
         message: "ok"
-
     }
-    let parsedJson
     try {
-        parsedJson = JSON.parse(params.jsonTx)
+        const parsedJson = JSON.parse(params.jsonTx)
+        const tx = Mina.Transaction.fromJSON(parsedJson)
+
+        const fee = tx.transaction.feePayer.body.fee.toJSON();
+        const sender = tx.transaction.feePayer.body.publicKey.toBase58();
+        const nonce = Number(tx.transaction.feePayer.body.nonce.toBigint());
+        const memo = tx.transaction.memo;
+        const minaSignerPayload = {
+            zkappCommand: parsedJson,
+            feePayer: {
+                feePayer: sender,
+                fee,
+                nonce,
+                memo,
+            },
+        };
+
+        const res = client.signTransaction(minaSignerPayload, signerPrivateKeyString)
+        response.signedTx = res.data.zkappCommand;
     } catch (error) {
         response.message = error.message;
         response.success = false;
         response.signedTx = null;
-        return response;
+    } finally {
+        return response
     }
-    const tx = Mina.Transaction.fromJSON(parsedJson)
-
-    const fee = tx.transaction.feePayer.body.fee.toJSON();
-    const sender = tx.transaction.feePayer.body.publicKey.toBase58();
-    const nonce = Number(tx.transaction.feePayer.body.nonce.toBigint());
-    const memo = tx.transaction.memo;
-    const minaSignerPayload = {
-        zkappCommand: parsedJson,
-        feePayer: {
-            feePayer: sender,
-            fee,
-            nonce,
-            memo,
-        },
-    };
-    const res = client.signTransaction(minaSignerPayload, signerPrivateKeyString)
-    response.signedTx = res.data.zkappCommand;
-    return response;
 };
