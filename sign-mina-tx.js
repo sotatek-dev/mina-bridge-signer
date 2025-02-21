@@ -1,13 +1,16 @@
 import { Mina } from "o1js";
 import Client from "mina-signer";
+import { config } from 'dotenv'
+import assert from 'assert'
+config()
 // env
-const networkType = 'testnet'
+const networkType = process.env['MINA_NETWORK_TYPE'] ?? 'testnet'
 // KMS
 const signerPrivateKeyString = 'EKEkFcCTX5upE1cyM3KuUveXWx8Mpk5ubDCDp3VqK83CtZaegdRX'
-const network = Mina.Network({
-    mina: 'https://proxy.devnet.minaexplorer.com/graphql'
-})
-Mina.setActiveInstance(network);
+
+// env assertion
+assert(networkType === 'mainnet' || networkType === 'testnet', 'invalid network type')
+//
 const client = new Client({
     network: networkType
 })
@@ -48,18 +51,6 @@ export async function sign_mina(params) {
         },
     };
     const res = client.signTransaction(minaSignerPayload, signerPrivateKeyString)
-
     response.signedTx = res.data.zkappCommand;
-    return respone;
-    // const [zkAppResponse, err] = await sendZkapp(JSON.stringify(res.data.zkappCommand), 'https://proxy.devnet.minaexplorer.com/graphql')
-    // console.log(zkAppResponse,err);
-
-    // console.log(zkAppResponse.data.sendZkapp.zkapp.hash, err);
-    // tx.send()
-    // return response
-    // const res1 = await Mina.Transaction.fromJSON(res.data.zkappCommand).send()
-    // console.log(res1);
-
-    // await res1.wait()
-    // console.log('done');
+    return response;
 };
