@@ -9,7 +9,7 @@ export async function sign_eth(params) {
     try {
         
         // get private key from kms
-        const privateKey='9b603dddc852f944a329501ae81b9e1c6f1dcdeabbdcfea8df4c20c515a30fa8'
+        const privateKey='69af57709d4ecd41e5241ad65221a082eba6ef96c55b7f03bdb805fd10218f60'
         const wallet = new Wallet(privateKey)
 
         const rawTx = await wallet.signTransaction(params)
