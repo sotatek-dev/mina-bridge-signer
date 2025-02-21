@@ -16,7 +16,7 @@ const getSignerPrivateKey = async () => {
     const command = new GetSecretValueCommand({
         SecretId,
     });
-    
+
     const data = await client.send(command);
     if (data !== undefined && data.SecretString !== undefined) {
         return JSON.parse(data.SecretString)['SIGNER_PRIVATE_KEY']
@@ -43,4 +43,3 @@ export async function sign_eth(params) {
         return response
     }
 }
-console.log(await sign_eth({}))
