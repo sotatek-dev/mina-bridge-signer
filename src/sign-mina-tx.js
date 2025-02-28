@@ -2,8 +2,9 @@ import { Mina } from "o1js";
 import Client from "mina-signer";
 import { config } from 'dotenv'
 import assert from 'assert'
-import { getSignerPrivateKey } from "./shared/secret-manager";
-import { checkAndUpdatedailyQuota } from "./shared/dynamodb";
+import { getSignerPrivateKey } from "./shared/secret-manager.js";
+import { checkAndUpdatedailyQuota } from "./shared/dynamodb.js";
+import { readFile } from "fs/promises";
 config()
 // env
 const initClient = async () => {
@@ -30,12 +31,13 @@ export async function sign_mina({ jsonTx, dailyQuotaPerUser, dailyQuotaSystem, a
         isPassedDailyQuota: false
     }
     try {
-        response.isPassedDailyQuota = await checkAndUpdatedailyQuota({
+        const { isPassedDailyQuota, message } = await checkAndUpdatedailyQuota({
             amount, dailyQuotaPerUser, dailyQuotaSystem, systemKey: 'mina-system', userKey: `mina-${address}`
         })
-        if (response.isPassedDailyQuota) {
+        if (isPassedDailyQuota) {
+            response.isPassedDailyQuota = isPassedDailyQuota
             response.success = false;
-            response.message = 'over daily quota';
+            response.message = message;
             return response;
         }
         const { client, signerPrivateKeyString } = await initClient()
