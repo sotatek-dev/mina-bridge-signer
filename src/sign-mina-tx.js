@@ -2,34 +2,15 @@ import { Mina } from "o1js";
 import Client from "mina-signer";
 import { config } from 'dotenv'
 import assert from 'assert'
-import { GetSecretValueCommand, SecretsManagerClient } from "@aws-sdk/client-secrets-manager";
+import { getSignerPrivateKey } from "./shared/secret-manager";
+import { checkAndUpdatedailyQuota } from "./shared/dynamodb";
 config()
 // env
-
-const getSignerPrivateKey = async () => {
-    const region = process.env['AWS_REGION']
-    const SecretId = process.env['SIGNER_MINA_KEY_ID']
-    assert(typeof region === 'string' && region.length > 0, 'invalid aws region')
-    assert(typeof SecretId === 'string' && SecretId.length > 0, 'invalid SecretId')
-
-    const client = new SecretsManagerClient({
-        region,
-    });
-
-    const command = new GetSecretValueCommand({
-        SecretId,
-    });
-    const data = await client.send(command);
-
-    if (data !== undefined && data.SecretString !== undefined) {
-        return JSON.parse(data.SecretString)['SIGNER_MINA_PRIVATE_KEY']
-    } throw new Error("cannot decrypt signer key")
-}
 const initClient = async () => {
     const networkType = process.env['MINA_NETWORK_TYPE']
     assert(networkType === 'mainnet' || networkType === 'testnet', 'invalid network type')
-    
-    const signerPrivateKeyString = await getSignerPrivateKey()
+
+    const signerPrivateKeyString = await getSignerPrivateKey('SIGNER_MINA_KEY_ID')
 
     const client = new Client({
         network: networkType
@@ -41,17 +22,25 @@ const initClient = async () => {
  * @param {{jsonTx:string}} params 
  * @returns 
  */
-export async function sign_mina(params) {
+export async function sign_mina({ jsonTx, dailyQuotaPerUser, dailyQuotaSystem, amount, address }) {
     const response = {
         success: true,
         signedTx: undefined,
-        message: "ok"
+        message: "ok",
+        isPassedDailyQuota: false
     }
     try {
-
+        response.isPassedDailyQuota = await checkAndUpdatedailyQuota({
+            amount, dailyQuotaPerUser, dailyQuotaSystem, systemKey: 'mina-system', userKey: `mina-${address}`
+        })
+        if (response.isPassedDailyQuota) {
+            response.success = false;
+            response.message = 'over daily quota';
+            return response;
+        }
         const { client, signerPrivateKeyString } = await initClient()
 
-        const parsedJson = JSON.parse(params.jsonTx)
+        const parsedJson = JSON.parse(jsonTx)
         const tx = Mina.Transaction.fromJSON(parsedJson)
 
         const fee = tx.transaction.feePayer.body.fee.toJSON();
