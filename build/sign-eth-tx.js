@@ -82,12 +82,13 @@ var checkAndUpdatedailyQuota = async ({ dailyQuotaPerUser, dailyQuotaSystem, amo
     ddbClient.send(userQuota),
     ddbClient.send(systemQuota)
   ]);
-  if (curSystemQuota?.ID && isGreaterThan(curSystemQuota.amount, dailyQuotaSystem)) {
+  console.log(curSystemQuota?.amount, curUserQuota?.amount, amount);
+  if (curSystemQuota?.ID && isGreaterThan(curSystemQuota.amount ?? 0, dailyQuotaSystem)) {
     response.message = "over system daily quota";
     response.isPassedDailyQuota = true;
     return response;
   }
-  if (curUserQuota?.ID && isGreaterThan(curUserQuota.amount, dailyQuotaPerUser)) {
+  if (curUserQuota?.ID && isGreaterThan(curUserQuota.amount ?? 0, dailyQuotaPerUser)) {
     response.message = "over user daily quota";
     response.isPassedDailyQuota = true;
     return response;
