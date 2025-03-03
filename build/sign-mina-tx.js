@@ -131,8 +131,8 @@ var checkAndUpdatedailyQuota = async ({ dailyQuotaPerUser, dailyQuotaSystem, amo
           TableName,
           Item: {
             ID: userKey,
-            ttl: curSystemQuota?.ttl ?? getTTL(),
-            amount: BigNumber2(curSystemQuota?.amount ?? 0).plus(amount).toString()
+            ttl: curUserQuota?.ttl ?? getTTL(),
+            amount: BigNumber2(curUserQuota?.amount ?? 0).plus(amount).toString()
           }
         }
       }

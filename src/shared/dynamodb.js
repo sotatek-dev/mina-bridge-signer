@@ -71,8 +71,8 @@ export const checkAndUpdatedailyQuota = async ({ dailyQuotaPerUser, dailyQuotaSy
                     TableName,
                     Item: {
                         ID: userKey,
-                        ttl: curSystemQuota?.ttl ?? getTTL(),
-                        amount: BigNumber(curSystemQuota?.amount ?? 0).plus(amount).toString()
+                        ttl: curUserQuota?.ttl ?? getTTL(),
+                        amount: BigNumber(curUserQuota?.amount ?? 0).plus(amount).toString()
                     }
                 }
             }
