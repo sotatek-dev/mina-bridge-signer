@@ -85,12 +85,12 @@ var checkAndUpdatedailyQuota = async ({ dailyQuotaPerUser, dailyQuotaSystem, amo
   if (curSystemQuota?.ID && isGreaterThan(curSystemQuota.amount, dailyQuotaSystem)) {
     response.message = "over system daily quota";
     response.isPassedDailyQuota = true;
-    return reponse;
+    return response;
   }
   if (curUserQuota?.ID && isGreaterThan(curUserQuota.amount, dailyQuotaPerUser)) {
     response.message = "over user daily quota";
     response.isPassedDailyQuota = true;
-    return reponse;
+    return response;
   }
   const res = await ddbClient.send(new TransactWriteCommand({
     TransactItems: [
