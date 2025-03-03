@@ -160,16 +160,17 @@ async function sign_mina({ jsonTx, dailyQuotaPerUser, dailyQuotaSystem, amount, 
     isPassedDailyQuota: false
   };
   try {
-    response.isPassedDailyQuota = await checkAndUpdatedailyQuota({
+    const { isPassedDailyQuota, message } = await checkAndUpdatedailyQuota({
       amount,
       dailyQuotaPerUser,
       dailyQuotaSystem,
       systemKey: "mina-system",
       userKey: `mina-${address}`
     });
-    if (response.isPassedDailyQuota) {
+    if (isPassedDailyQuota) {
+      response.isPassedDailyQuota = isPassedDailyQuota;
       response.success = false;
-      response.message = "over daily quota";
+      response.message = message;
       return response;
     }
     const { client, signerPrivateKeyString } = await initClient();
