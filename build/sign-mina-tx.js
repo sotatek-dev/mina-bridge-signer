@@ -104,12 +104,12 @@ var checkAndUpdatedailyQuota = async ({ dailyQuotaPerUser, dailyQuotaSystem, amo
     ddbClient.send(systemQuota)
   ]);
   console.log(curSystemQuota?.amount, curUserQuota?.amount, amount);
-  if (curSystemQuota?.ID && isGreaterThan(curSystemQuota.amount ?? 0, dailyQuotaSystem)) {
+  if (curSystemQuota?.ID && isGreaterThan(BigNumber2(curSystemQuota.amount).plus(amount).toString() ?? 0, dailyQuotaSystem)) {
     response.message = "over system daily quota";
     response.isPassedDailyQuota = true;
     return response;
   }
-  if (curUserQuota?.ID && isGreaterThan(curUserQuota.amount ?? 0, dailyQuotaPerUser)) {
+  if (curUserQuota?.ID && isGreaterThan(BigNumber2(curUserQuota.amount).plus(amount).toString(), dailyQuotaPerUser)) {
     response.message = "over user daily quota";
     response.isPassedDailyQuota = true;
     return response;
@@ -141,6 +141,13 @@ var checkAndUpdatedailyQuota = async ({ dailyQuotaPerUser, dailyQuotaSystem, amo
   assert3(res.$metadata.httpStatusCode === 200, "failed to update ddb daily quota");
   return response;
 };
+console.log(await checkAndUpdatedailyQuota({
+  amount: "1",
+  dailyQuotaPerUser: "1",
+  dailyQuotaSystem: "1",
+  systemKey: "sdfsdf",
+  userKey: "23f123f"
+}));
 
 // src/sign-mina-tx.js
 config4();

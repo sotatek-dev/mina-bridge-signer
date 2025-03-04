@@ -44,12 +44,12 @@ export const checkAndUpdatedailyQuota = async ({ dailyQuotaPerUser, dailyQuotaSy
     ])
     console.log(curSystemQuota?.amount, curUserQuota?.amount, amount);
 
-    if (curSystemQuota?.ID && isGreaterThan(curSystemQuota.amount ?? 0, dailyQuotaSystem)) {
+    if (curSystemQuota?.ID && isGreaterThan(BigNumber(curSystemQuota.amount).plus(amount).toString() ?? 0, dailyQuotaSystem)) {
         response.message = 'over system daily quota'
         response.isPassedDailyQuota = true;
         return response;
     }
-    if (curUserQuota?.ID && isGreaterThan(curUserQuota.amount ?? 0, dailyQuotaPerUser)) {
+    if (curUserQuota?.ID && isGreaterThan(BigNumber(curUserQuota.amount).plus(amount).toString(), dailyQuotaPerUser)) {
         response.message = 'over user daily quota'
         response.isPassedDailyQuota = true;
         return response;
@@ -81,3 +81,11 @@ export const checkAndUpdatedailyQuota = async ({ dailyQuotaPerUser, dailyQuotaSy
     assert(res.$metadata.httpStatusCode === 200, 'failed to update ddb daily quota')
     return response;
 }
+
+console.log(await checkAndUpdatedailyQuota({
+    amount: '1',
+    dailyQuotaPerUser: '1',
+    dailyQuotaSystem: '1',
+    systemKey: 'sdfsdf',
+    userKey: '23f123f'
+}));
