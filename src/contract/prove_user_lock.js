@@ -25,8 +25,8 @@ export class UserLockBuilder extends MinaScBuilder {
     async build() {
         await this.compileBridgeContract()
         await this.compileTokenContract()
-        return true
-        const pubKeysToFetch = [this.bridgePubKey, PublicKey.fromBase58(this.payload.address)]
+
+        const pubKeysToFetch = [this.bridgePubKey, PublicKey.fromBase58(this.payload.tokenAddress)]
         await Promise.all(pubKeysToFetch.map(e => fetchAccount({ publicKey: e })))
 
         const zkApp = new Bridge(this.bridgePubKey)

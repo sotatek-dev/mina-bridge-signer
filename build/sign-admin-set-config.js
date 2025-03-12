@@ -568,9 +568,9 @@ var MinaAdminMinMaxBuilder = class extends MinaScBuilder {
 var responseFormat = (data, success = true, message = "ok") => ({ data, success, message });
 
 // src/sign-admin-set-config.js
-var sign_admin_set_config = async (payload) => {
+var sign_admin_set_config = async ({ address, max, min }) => {
   try {
-    const data = await new MinaAdminMinMaxBuilder(payload).build();
+    const data = await new MinaAdminMinMaxBuilder({ address, max, min }).build();
     return responseFormat(data);
   } catch (error) {
     console.log(error);
