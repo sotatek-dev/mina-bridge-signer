@@ -395,130 +395,35 @@ __decorate3([
   __metadata3("design:returntype", Promise)
 ], Bridge.prototype, "unlock", null);
 
-// src/contract/prove_admin_min_max.js
-import assert2 from "assert";
-
 // src/contract/base.js
 import { config } from "../node_modules/dotenv/lib/main.js";
-
-// src/contract/cache.js
-import assert from "assert";
-import { readFile } from "fs/promises";
-var TOKEN_CACHE_FILE_NAMES = [
-  "lagrange-basis-fp-1024",
-  "lagrange-basis-fp-2048",
-  "lagrange-basis-fp-4096",
-  "lagrange-basis-fp-8192",
-  "lagrange-basis-fp-16384",
-  "lagrange-basis-fp-65536",
-  "srs-fp-65536",
-  "srs-fq-32768",
-  "step-vk-fungibletoken-approvebase",
-  "step-vk-fungibletoken-burn",
-  "step-vk-fungibletoken-getbalanceof",
-  "step-vk-fungibletoken-getdecimals",
-  "step-vk-fungibletoken-initialize",
-  "step-vk-fungibletoken-mint",
-  "step-vk-fungibletoken-pause",
-  "step-vk-fungibletoken-resume",
-  "step-vk-fungibletoken-setadmin",
-  "step-vk-fungibletoken-transfer",
-  "step-vk-fungibletoken-updateverificationkey",
-  "step-vk-fungibletokenadmin-canchangeadmin",
-  "step-vk-fungibletokenadmin-canchangeverificationkey",
-  "step-vk-fungibletokenadmin-canmint",
-  "step-vk-fungibletokenadmin-canpause",
-  "step-vk-fungibletokenadmin-canresume",
-  "step-vk-fungibletokenadmin-updateverificationkey",
-  "wrap-vk-fungibletoken",
-  "wrap-vk-fungibletokenadmin"
-];
-var BRIDGE_CACHE_FILE_NAME = [
-  "lagrange-basis-fp-1024",
-  "lagrange-basis-fp-2048",
-  "lagrange-basis-fp-4096",
-  "lagrange-basis-fp-8192",
-  "lagrange-basis-fp-16384",
-  "lagrange-basis-fp-65536",
-  "srs-fp-65536",
-  "srs-fq-32768",
-  "step-vk-bridge-changemanager",
-  "step-vk-bridge-changevalidatormanager",
-  "step-vk-bridge-lock",
-  "step-vk-bridge-setamountlimits",
-  "step-vk-bridge-unlock",
-  "step-vk-manager-changeadmin",
-  "step-vk-manager-changeminter_1",
-  "step-vk-manager-changeminter_2",
-  "step-vk-manager-changeminter_3",
-  "step-vk-validatormanager-changevalidator",
-  "wrap-vk-bridge",
-  "wrap-vk-manager",
-  "wrap-vk-validatormanager"
-];
-var mapTypeToCache = {
-  "token": TOKEN_CACHE_FILE_NAMES,
-  "bridge": BRIDGE_CACHE_FILE_NAME
-};
-function fetchFiles(type) {
-  const listFiles = mapTypeToCache[type];
-  assert(listFiles, "invalid cache");
-  return Promise.all(
-    listFiles.map((file) => {
-      return Promise.all([
-        readFile(`${process.cwd()}/cache/${file}.header`).then((res) => res.toString()),
-        readFile(`${process.cwd()}/cache/${file}`).then((res) => res.toString())
-      ]).then(([header, data]) => ({ file, header, data }));
-    })
-  ).then(
-    (cacheList) => cacheList.reduce((acc, { file, header, data }) => {
-      acc[file] = { file, header, data };
-      return acc;
-    }, {})
-  );
-}
-function fileSystem(files) {
-  return {
-    read({ persistentId, uniqueId, dataType }) {
-      if (!files[persistentId]) {
-        return void 0;
-      }
-      if (dataType === "string") {
-        return new TextEncoder().encode(files[persistentId].data);
-      }
-      return void 0;
-    },
-    write() {
-    },
-    canWrite: true
-  };
-}
-
-// src/contract/base.js
 import { Mina } from "../node_modules/o1js/dist/node/index.js";
 import { FungibleToken as FungibleToken2 } from "../node_modules/mina-fungible-token/target/index.js";
 config();
 var MinaScBuilder = class {
   constructor() {
-    const network = Mina.Network({
+    const testnet = {
+      mina: "https://api.minascan.io/node/devnet/v1/graphql",
+      archive: "https://api.minascan.io/archive/devnet/v1/graphql/",
+      networkId: "testnet"
+    };
+    const mainnet = {
       mina: "https://api.minascan.io/node/mainnet/v1/graphql",
       archive: "https://api.minascan.io/archive/mainnet/v1/graphql/",
       networkId: "mainnet"
-    });
+    };
+    const networkType = process.env["MINA_NETWORK_TYPE"];
+    const network = Mina.Network(networkType === "mainnet" ? mainnet : testnet);
     Mina.setActiveInstance(network);
   }
   async compileBridgeContract() {
     console.log("compiling bridge");
-    await Bridge.compile({
-      cache: fileSystem(fetchFiles("bridge"))
-    });
+    await Bridge.compile({});
     console.log("compiling bridge done");
   }
   async compileTokenContract() {
     console.log("compiling token");
-    await FungibleToken2.compile({
-      cache: fileSystem(fetchFiles("token"))
-    });
+    await FungibleToken2.compile({});
     console.log("compiling token done");
   }
 };
@@ -534,8 +439,6 @@ var MinaAdminMinMaxBuilder = class extends MinaScBuilder {
     const _bridgePubKey = process.env["MINA_BRIGDE_PUBLIC_ADDRESS"];
     console.log("bridge contract", _bridgePubKey);
     this.bridgePubKey = PublicKey4.fromBase58(_bridgePubKey);
-    assert2(typeof min === "number" && min > 0, "min invalid");
-    assert2(typeof max === "number" && max > 0 && max > min, "max invalid");
     this.payload = {
       address,
       min,

@@ -15,8 +15,6 @@ export class MinaAdminMinMaxBuilder extends MinaScBuilder {
         console.log('bridge contract', _bridgePubKey);
 
         this.bridgePubKey = PublicKey.fromBase58(_bridgePubKey)
-        assert(typeof min === 'number' && min > 0, 'min invalid')
-        assert(typeof max === 'number' && max > 0 && max > min, 'max invalid')
         this.payload = {
             address, min, max
         }
