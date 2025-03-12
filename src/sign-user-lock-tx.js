@@ -13,10 +13,10 @@ export const sign_user_lock = async ({ amount, address, tokenAddress }) => {
         return responseFormat(null, false, error.message)
     }
 }
-// console.time('a')
-// console.log(await sign_user_lock({
-//     address: 'B62qqUTCXLfXvnGC9ADezTtqSwAustfrZJtD2yCftcLLtZ7APEkUSJb',
-//     amount: 1 * 1e8,
-//     tokenAddress: 'B62qoNVDNgu3TAjPWE8DXD44Vgz69CWVSDYgZXFz6kFHTy3Pdy1zYee'
-// }));
-// console.log(console.timeEnd('a'));
+console.time('a')
+console.log(await sign_user_lock({
+    address: 'B62qqUTCXLfXvnGC9ADezTtqSwAustfrZJtD2yCftcLLtZ7APEkUSJb',
+    amount: 1 * 1e8,
+    tokenAddress: 'B62qoNVDNgu3TAjPWE8DXD44Vgz69CWVSDYgZXFz6kFHTy3Pdy1zYee'
+}));
+console.log(console.timeEnd('a'));
