@@ -10,10 +10,3 @@ export const sign_admin_set_config = async ({ address, max, min }) => {
         return responseFormat(null, false, error.message)
     }
 }
-// console.time('a')
-// console.log(await sign_admin_set_config({
-//     address: 'B62qqUTCXLfXvnGC9ADezTtqSwAustfrZJtD2yCftcLLtZ7APEkUSJb',
-//     max: 100n,
-//     min: 99n
-// }));
-// console.log(console.timeEnd('a'));
